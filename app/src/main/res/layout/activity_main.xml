@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#F8F9FA">
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="NativeSecurityEngine Demo"
+        android:textColor="#1F2937"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#E5E7EB"
+        android:padding="10dp"
+        android:text="Engine State: INITIALIZING | HSM: -- | Biometric: --"
+        android:textColor="#374151"
+        android:textSize="13sp" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_gen_key"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="Generate Key" />
+
+            <Button
+                android:id="@+id/btn_encrypt_decrypt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="AES-GCM Encrypt/Decrypt" />
+
+            <Button
+                android:id="@+id/btn_list_keys"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="List Keys" />
+
+            <Button
+                android:id="@+id/btn_biometric_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="Biometric Check" />
+
+            <Button
+                android:id="@+id/btn_biometric_auth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="Biometric Auth" />
+
+            <Button
+                android:id="@+id/btn_hash"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="SHA-256 Hash" />
+
+            <Button
+                android:id="@+id/btn_hmac"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="HMAC Sign" />
+
+            <Button
+                android:id="@+id/btn_permissions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="Check Permissions" />
+
+            <Button
+                android:id="@+id/btn_rpc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="RPC /security" />
+
+            <Button
+                android:id="@+id/btn_clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Clear Log" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="6dp"
+        android:paddingBottom="4dp"
+        android:text="Security Engine Diagnostics &amp; Cryptographic Telemetry:"
+        android:textColor="#4B5563"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <ScrollView
+        android:id="@+id/scroll_console"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#1E1E1E"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/tv_console_output"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="SecurityEngine initialized. Ready for cryptographic operations...\n"
+            android:textColor="#38BDF8"
+            android:textSize="12sp" />
+    </ScrollView>
+
+</LinearLayout>
