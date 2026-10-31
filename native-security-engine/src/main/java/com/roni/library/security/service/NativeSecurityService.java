@@ -1,21 +1,24 @@
+
 package com.roni.library.security.service;
 
 import com.roni.library.security.SecurityEngine;
 import com.roni.library.security.biometric.BiometricAuthService;
 import com.roni.library.security.keystore.KeyStoreManager;
 import com.roni.library.security.permission.PermissionService;
+
 import com.roni.library.service.BaseService;
-import com.roni.library.service.ServiceRegistry;
 
 /**
- * Layer 1 ecosystem integration service extending {@link BaseService}.
- * Registers the NativeSecurityEngine subsystem into the {@link ServiceRegistry}.
+ * NativeSecurityEngine integration service.
+ *
+ * Manages SecurityEngine lifecycle through BaseService.
  *
  * @author infoadmstudio2020-cyber
  */
 public class NativeSecurityService extends BaseService {
 
-    public static final String SERVICE_NAME = "NativeSecurityService";
+    public static final String SERVICE_NAME =
+            "NativeSecurityService";
 
     private final SecurityEngine engine;
 
@@ -24,23 +27,43 @@ public class NativeSecurityService extends BaseService {
     }
 
     public NativeSecurityService(SecurityEngine engine) {
+
         super(SERVICE_NAME);
+
+        if (engine == null) {
+            throw new IllegalArgumentException(
+                    "SecurityEngine cannot be null"
+            );
+        }
+
         this.engine = engine;
     }
 
+    /**
+     * Initializes the security engine.
+     */
     @Override
-    protected void onInit() {
-        if (engine != null && !engine.isInitialized()) {
+    protected void onInitialize() {
+
+        if (engine.isDisposed()) {
+            throw new IllegalStateException(
+                    "SecurityEngine is already disposed"
+            );
+        }
+
+        if (!engine.isInitialized()) {
             engine.initialize();
         }
-        ServiceRegistry.getInstance().register(this);
     }
 
+    /**
+     * Releases the security engine.
+     */
     @Override
-    protected void onDestroy() {
-        ServiceRegistry.getInstance().unregister(getName());
-        if (engine != null) {
-            engine.release();
+    protected void onDispose() {
+
+        if (!engine.isDisposed()) {
+            engine.dispose();
         }
     }
 

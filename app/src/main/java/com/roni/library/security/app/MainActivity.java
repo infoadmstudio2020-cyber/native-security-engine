@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.roni.library.contracts.api.IApiCallback;
 import com.roni.library.contracts.api.NativeApiError;
 import com.roni.library.contracts.api.NativeApiRequest;
 import com.roni.library.contracts.api.NativeApiResponse;
@@ -30,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+
 import javax.crypto.Cipher;
 
 /**
@@ -41,12 +41,11 @@ import javax.crypto.Cipher;
  */
 public class MainActivity extends AppCompatActivity {
 
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault());
     private TextView tvStatus;
     private TextView tvConsole;
     private ScrollView scrollConsole;
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault());
-
     private SecurityEngine engine;
 
     @Override
@@ -68,12 +67,7 @@ public class MainActivity extends AppCompatActivity {
     private void setupSecurityEngine() {
         appendLog("[INIT] Initializing NativeSecurityEngine subsystem...");
 
-        SecurityEngineConfig config = new SecurityEngineConfig.Builder()
-                .debugEnabled(true)
-                .tag("SecurityDemo")
-                .requireHardwareBackedKeys(false)
-                .biometricFallbackEnabled(true)
-                .build();
+        SecurityEngineConfig config = new SecurityEngineConfig.Builder().debugEnabled(true).tag("SecurityDemo").requireHardwareBackedKeys(false).biometricFallbackEnabled(true).build();
 
         engine = SecurityEngine.getInstance();
         engine.init(this, config);
@@ -88,10 +82,7 @@ public class MainActivity extends AppCompatActivity {
             BiometricCapability bioCap = engine.getBiometricService().canAuthenticate(AuthenticatorType.BIOMETRIC_STRONG);
             int keysCount = engine.getKeyStoreManager().listAliases().size();
 
-            String status = "State: " + engine.getState() +
-                    " | HSM: " + (hsm ? "Available" : "Emulated") +
-                    " | Biometric: " + bioCap.name() +
-                    " | Keys: " + keysCount;
+            String status = "State: " + engine.getState() + " | HSM: " + (hsm ? "Available" : "Emulated") + " | Biometric: " + bioCap.name() + " | Keys: " + keysCount;
             tvStatus.setText(status);
         }
     }
@@ -152,16 +143,11 @@ public class MainActivity extends AppCompatActivity {
     private void checkBiometrics() {
         BiometricCapability strong = engine.getBiometricService().canAuthenticate(AuthenticatorType.BIOMETRIC_STRONG);
         BiometricCapability cred = engine.getBiometricService().canAuthenticate(AuthenticatorType.DEVICE_CREDENTIAL);
-        appendLog("[BIOMETRIC CAPABILITY]\n" +
-                "  BIOMETRIC_STRONG: " + strong.name() + " (" + strong.getDescription() + ")\n" +
-                "  DEVICE_CREDENTIAL: " + cred.name() + " (" + cred.getDescription() + ")");
+        appendLog("[BIOMETRIC CAPABILITY]\n" + "  BIOMETRIC_STRONG: " + strong.name() + " (" + strong.getDescription() + ")\n" + "  DEVICE_CREDENTIAL: " + cred.name() + " (" + cred.getDescription() + ")");
     }
 
     private void authenticateBiometrics() {
-        BiometricPromptConfig config = BiometricPromptConfig.builder()
-                .setTitle("Verify Identity")
-                .setSubtitle("Confirm action via biometrics")
-                .build();
+        BiometricPromptConfig config = BiometricPromptConfig.builder().setTitle("Verify Identity").setSubtitle("Confirm action via biometrics").build();
 
         appendLog("[BIOMETRIC] Initiating authentication prompt...");
         engine.getBiometricService().authenticate(config, new BiometricAuthCallback() {
@@ -186,9 +172,7 @@ public class MainActivity extends AppCompatActivity {
         String testInput = "NativeRuntime Ecosystem Security Standard";
         String sha256 = CryptoHash.sha256Hex(testInput);
         String sha512 = CryptoHash.sha512Hex(testInput);
-        appendLog("[HASHING] Input: \"" + testInput + "\"\n" +
-                "  SHA-256: " + sha256 + "\n" +
-                "  SHA-512: " + sha512.substring(0, 32) + "...");
+        appendLog("[HASHING] Input: \"" + testInput + "\"\n" + "  SHA-256: " + sha256 + "\n" + "  SHA-512: " + sha512.substring(0, 32) + "...");
     }
 
     private void testHmac() {
@@ -212,17 +196,28 @@ public class MainActivity extends AppCompatActivity {
         NativeApiRequest request = new NativeApiRequest(reqId, "/security", "hash.sha256", params, System.currentTimeMillis());
         appendLog("--> RPC DISPATCH: [/security] Action=hash.sha256");
 
-        engine.getCommandHandler().handle(request, new IApiCallback() {
-            @Override
-            public void onResponse(NativeApiResponse response) {
+
+        try {
+            NativeApiResponse response = engine.getCommandHandler().handleRequest(request);
+
+            if (response != null && response.isSuccess()) {
+
                 mainHandler.post(() -> appendLog("<-- RPC SUCCESS: [" + response.getRequestId() + "] Data=" + response.getData()));
+
+            } else {
+
+                NativeApiError error = response != null ? response.getError() : null;
+
+                String errorMessage = error != null ? error.getMessage() : "Unknown RPC error";
+
+                mainHandler.post(() -> appendLog("<-- RPC ERROR: [" + reqId + "] Msg=" + errorMessage));
             }
 
-            @Override
-            public void onError(NativeApiError error) {
-                mainHandler.post(() -> appendLog("<-- RPC ERROR: [" + reqId + "] Msg=" + error.getMessage()));
-            }
-        });
+        } catch (Exception e) {
+
+            mainHandler.post(() -> appendLog("<-- RPC ERROR: [" + reqId + "] Msg=" + e.getMessage()));
+        }
+
     }
 
     private void appendLog(String message) {
@@ -232,11 +227,14 @@ public class MainActivity extends AppCompatActivity {
         scrollConsole.post(() -> scrollConsole.fullScroll(ScrollView.FOCUS_DOWN));
     }
 
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (engine != null) {
-            engine.release();
+
+        if (engine != null && !engine.isDisposed()) {
+            engine.dispose();
         }
     }
+
 }

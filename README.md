@@ -40,7 +40,7 @@ In your module's `build.gradle`:
 
 ```gradle
 dependencies {
-    implementation 'com.github.infoadmstudio2020-cyber:native-security-engine:1.0.0'
+    implementation 'com.github.infoadmstudio2020-cyber:native-security-engine:1.0.1'
 
     // Ecosystem dependencies
     api 'com.github.infoadmstudio2020-cyber:NativeRuntimeContracts:v1.0.1'
